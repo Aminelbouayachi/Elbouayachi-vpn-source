@@ -1,0 +1,63 @@
+name: Build & Release Elbouayachi VPN
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Package Dist for Download
+        run: |
+          cd dist
+          zip -r ../elbouayachi-vpn-app.zip .
+          cd ..
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elbouayachi-vpn-app
+          path: elbouayachi-vpn-app.zip
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0
+          name: "Elbouayachi VPN v1.0.0 (Release)"
+          body: |
+            ## 🇲🇦 Elbouayachi VPN - جاهز للتحميل والتثبيت
+            
+            تم بناء التطبيق بنجاح من سيرفرات GitHub!
+            
+            ### 📥 روابط التحميل المباشرة:
+            - **[elbouayachi-vpn-app.zip](https://github.com/${{ github.repository }}/releases/download/v1.0.0/elbouayachi-vpn-app.zip)** : ملف التطبيق المترجم والجاهز للتشغيل.
+            - **[elbouayachi-vpn-source.zip](https://github.com/${{ github.repository }}/releases/download/v1.0.0/elbouayachi-vpn-source.zip)** : سورس كود المشروع كاملاً.
+          files: |
+            elbouayachi-vpn-app.zip
+            public/elbouayachi-vpn-source.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
