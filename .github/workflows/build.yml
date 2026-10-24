@@ -25,36 +25,47 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Install dependencies
+      run: |
+        if [ -f "package.json" ]; then
+          :
+        elif [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
+        rm -rf node_modules package-lock.json
+        npm install --legacy-peer-deps
+
     - name: Setup Android SDK Environment
       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
         unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
         mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
-        
-        yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-    - name: Install dependencies & generate Android files
-      run: |
-        npm install
-        # إضافة وتهيئة ملفات الاندرويد و Capacitor بكيفية صحيحة
-        npx cap add android || true
-        npx cap update android
+        yes | sdkmanager --licenses > /dev/null
+        sdkmanager "platform-tools" "platforms;android-33" "platforms;android-34" "build-tools;33.0.0" "build-tools;34.0.0"
 
     - name: Build APK with Gradle
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
-        
+
         if [ -d "android" ]; then
           cd android
+        elif [ -d "Elbouayachi-vpn-source/android" ]; then
+          cd Elbouayachi-vpn-source/android
         fi
-        
+
         if [ -f "./gradlew" ]; then
           chmod +x gradlew
           ./gradlew assembleRelease
         else
           gradle assembleRelease
         fi
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: '**/build/outputs/apk/**/*.apk'
