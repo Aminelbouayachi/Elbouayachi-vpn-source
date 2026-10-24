@@ -20,6 +20,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Setup Android SDK Environment
       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
@@ -32,11 +37,10 @@ jobs:
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-    - name: Disable Problematic Capacitor Script
+    - name: Install Node Modules & Sync Capacitor
       run: |
-        # تعديل الملف الرئيسي app/build.gradle لكي لا يقرأ الملف المشكل نهائياً
-        find . -name "build.gradle" -path "*/app/*" -exec sed -i '/capacitor\.build\.gradle/d' {} + || true
-        find . -name "capacitor.build.gradle" -delete || true
+        npm install
+        npx cap update android
 
     - name: Build APK with Gradle
       run: |
