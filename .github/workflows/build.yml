@@ -20,6 +20,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Setup Android SDK Environment
       run: |
         mkdir -p $HOME/android-sdk/cmdline-tools
@@ -32,11 +37,20 @@ jobs:
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
+    - name: Install dependencies & sync Capacitor
+      run: |
+        # تثبيت حزم Node وتوليد ملفات Cordova/Capacitor المفقودة
+        if [ -f "package.json" ]; then
+          npm install
+          npx cap sync android
+        elif [ -d "android" ]; then
+          cd android && npm install || true
+        fi
+
     - name: Build APK with Gradle
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         
-        # البحث التلقائي عن المجلد الذي يحتوي على ملف build.gradle
         PROJECT_DIR=$(find . -name "build.gradle" -maxdepth 3 | xargs dirname | head -n 1)
         
         if [ -n "$PROJECT_DIR" ]; then
