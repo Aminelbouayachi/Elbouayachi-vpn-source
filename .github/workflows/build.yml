@@ -20,13 +20,22 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        items: platform-tools,platforms;android-33,build-tools;33.0.0
+    - name: Setup Android SDK Environment
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
+        unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
+        mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+        
+        yes | sdkmanager --licenses
+        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build APK with Gradle
-      run: ./gradlew assembleRelease
+      run: |
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        ./gradlew assembleRelease
