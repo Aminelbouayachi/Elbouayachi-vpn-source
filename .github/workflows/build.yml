@@ -20,17 +20,32 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Install dependencies and sync Capacitor
+    - name: Setup Android SDK Environment
       run: |
-        if [ -f "package.json" ]; then
-          :
-        elif [ -f "Elbouayachi-vpn-source/package.json" ]; then
-          cd Elbouayachi-vpn-source
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
+        unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
+        mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+        
+        yes | sdkmanager --licenses
+        sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
+
+    - name: Build APK with Gradle
+      run: |
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        
+        # البحث عن مجلد android والدخول إليه مباشرة
+        if [ -d "android" ]; then
+          cd android
+        elif [ -d "Elbouayachi-vpn-source/android" ]; then
+          cd Elbouayachi-vpn-source/android
         fi
-        rm -rf node_modules package-lock.json
-        npm install --legacy-
+        
+        if [ -f "./gradlew" ]; then
+          chmod +x gradlew
+          ./gradlew assembleRelease
+        else
+          gradle assembleRelease
+        fi
