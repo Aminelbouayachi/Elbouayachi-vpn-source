@@ -14,11 +14,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -46,13 +46,10 @@ jobs:
         if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
           cd Elbouayachi-vpn-source
         fi
-        pwd
-        ls -la
         if [ ! -f capacitor.config.ts ] && [ ! -f capacitor.config.json ] && [ ! -f capacitor.config.js ]; then
           echo '{"appId":"com.elbouayachi.vpn","appName":"Elbouayachi VPN","webDir":"dist"}' > capacitor.config.json
         fi
         sed -i "s/'www'/'dist'/; s/\"www\"/\"dist\"/" capacitor.config.* || true
-        cat capacitor.config.* || true
         if [ ! -d "android" ]; then
           npx cap add android
         fi
