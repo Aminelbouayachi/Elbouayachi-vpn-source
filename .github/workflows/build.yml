@@ -25,54 +25,29 @@ jobs:
       with:
         node-version: '22'
 
-    - name: Install dependencies and sync Capacitor
+    - name: Npm install
       run: |
-        if [ -f "package.json" ]; then
-          :
-        elif [ -f "Elbouayachi-vpn-source/package.json" ]; then
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
           cd Elbouayachi-vpn-source
         fi
         rm -rf node_modules package-lock.json
         npm install --force --no-audit --no-fund --ignore-scripts
         npm install --force --no-audit --no-fund --ignore-scripts @capacitor/cli @capacitor/core @capacitor/android
+
+    - name: Build web app
+      run: |
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
         npm run build --if-present
-        npx cap sync android
 
-    - name: Setup Android SDK Environment
+    - name: Capacitor sync
       run: |
-        mkdir -p "$HOME/android-sdk/cmdline-tools"
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
-        unzip -q commandlinetools.zip -d "$HOME/android-sdk/cmdline-tools"
-        mv "$HOME/android-sdk/cmdline-tools/cmdline-tools" "$HOME/android-sdk/cmdline-tools/latest"
-        export ANDROID_SDK_ROOT="$HOME/android-sdk"
-        export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
-
-        yes | sdkmanager --licenses > /dev/null
-        sdkmanager "platform-tools" "platforms;android-33" "platforms;android-34" "build-tools;33.0.0" "build-tools;34.0.0"
-
-    - name: Build APK with Gradle
-      run: |
-        export ANDROID_SDK_ROOT="$HOME/android-sdk"
-
-        if [ -d "android" ]; then
-          cd android
-        elif [ -d "Elbouayachi-vpn-source/android" ]; then
-          cd Elbouayachi-vpn-source/android
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
         fi
-
-        sed -i '/aapt2FromMavenOverride/d' gradle.properties
-
-        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-
-        if [ -f "./gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        else
-          gradle assembleDebug
+        if [ ! -f capacitor.config.ts ] && [ ! -f capacitor.config.json ] && [ ! -f capacitor.config.js ]; then
+          echo '{"appId":"com.elbouayachi.vpn","appName":"Elbouayachi VPN","webDir":"dist"}' > capacitor.config.json
         fi
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: '**/build/outputs/apk/**/*.apk'
+        for f in capacitor.config.ts capacitor.config.json capacitor.config.js; do
+          if [ -f "$f" ]; then
