@@ -35,6 +35,11 @@ jobs:
     - name: Build APK with Gradle
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
+        # التأكد من الدخول للمجلد الصحيح للمشروع إذا كان فرعياً، أو البناء مباشرة
+        if [ -d "Elbouayachi-vpn-source" ]; then
+          cd Elbouayachi-vpn-source
+        fi
+        
         if [ -f "./gradlew" ]; then
           chmod +x gradlew
           ./gradlew assembleRelease
