@@ -25,7 +25,7 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Install dependencies
+    - name: Install dependencies and sync Capacitor
       run: |
         if [ -f "package.json" ]; then
           :
@@ -33,39 +33,4 @@ jobs:
           cd Elbouayachi-vpn-source
         fi
         rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps
-
-    - name: Setup Android SDK Environment
-      run: |
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
-        unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
-        mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
-
-        yes | sdkmanager --licenses > /dev/null
-        sdkmanager "platform-tools" "platforms;android-33" "platforms;android-34" "build-tools;33.0.0" "build-tools;34.0.0"
-
-    - name: Build APK with Gradle
-      run: |
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-
-        if [ -d "android" ]; then
-          cd android
-        elif [ -d "Elbouayachi-vpn-source/android" ]; then
-          cd Elbouayachi-vpn-source/android
-        fi
-
-        if [ -f "./gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleRelease
-        else
-          gradle assembleRelease
-        fi
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release
-        path: '**/build/outputs/apk/**/*.apk'
+        npm install --legacy-
