@@ -32,11 +32,15 @@ jobs:
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
+    - name: Fix Capacitor Gradle Script Issue
+      run: |
+        # إصلاح وتجاوز ملفات cordova المفقودة في مشروع Capacitor أوتوماتيكياً
+        find . -name "capacitor.build.gradle" -exec sed -i 's/apply from:.*cordova.variables.gradle//g' {} + || true
+
     - name: Build APK with Gradle
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         
-        # البحث عن مجلد android والدخول إليه مباشرة
         if [ -d "android" ]; then
           cd android
         elif [ -d "Elbouayachi-vpn-source/android" ]; then
