@@ -32,9 +32,10 @@ jobs:
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-    - name: Remove Problematic Capacitor Gradle File
+    - name: Disable Problematic Capacitor Script
       run: |
-        # حذف الملف المشكل نهائياً لتفادي أي خطأ في قراءته
+        # تعديل الملف الرئيسي app/build.gradle لكي لا يقرأ الملف المشكل نهائياً
+        find . -name "build.gradle" -path "*/app/*" -exec sed -i '/capacitor\.build\.gradle/d' {} + || true
         find . -name "capacitor.build.gradle" -delete || true
 
     - name: Build APK with Gradle
