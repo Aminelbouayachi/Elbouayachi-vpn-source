@@ -20,14 +20,31 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Install dependencies and sync Capacitor
+      run: |
+        if [ -f "package.json" ]; then
+          :
+        elif [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
+        rm -rf node_modules package-lock.json
+        npm cache clean --force
+        npm install --force --no-audit --no-fund --ignore-scripts || npm install --force --no-audit --no-fund --legacy-peer-deps --ignore-scripts
+        npm run build --if-present
+        npx cap sync android
+
     - name: Setup Android SDK Environment
       run: |
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
-        unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
-        mv $HOME/android-sdk/cmdline-tools/cmdline-tools$HOME/android-sdk/cmdline-tools/latest
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
-        
-        yes | sdkmanager --licenses
-        sdkmanager "platform-tools" "platforms;android-33" "build
+        mkdir -p "$HOME/android-sdk/cmdline-tools"
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
+        unzip -q commandlinetools.zip -d "$HOME/android-sdk/cmdline-tools"
+        mv "$HOME/android-sdk/cmdline-tools/cmdline-tools" "$HOME/android-sdk/cmdline-tools/latest"
+        export ANDROID_SDK_ROOT="$HOME/android-sdk"
+        export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
+
+        yes
