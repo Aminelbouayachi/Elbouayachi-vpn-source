@@ -32,10 +32,10 @@ jobs:
         yes | sdkmanager --licenses
         sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-    - name: Fix Capacitor Gradle Script Issue
+    - name: Remove Problematic Capacitor Gradle File
       run: |
-        # إصلاح وتجاوز ملفات cordova المفقودة في مشروع Capacitor أوتوماتيكياً
-        find . -name "capacitor.build.gradle" -exec sed -i 's/apply from:.*cordova.variables.gradle//g' {} + || true
+        # حذف الملف المشكل نهائياً لتفادي أي خطأ في قراءته
+        find . -name "capacitor.build.gradle" -delete || true
 
     - name: Build APK with Gradle
       run: |
