@@ -25,17 +25,36 @@ jobs:
       with:
         node-version: '22'
 
-    - name: Install dependencies and sync Capacitor
+    - name: Npm install
       run: |
-        if [ -f "package.json" ]; then
-          :
-        elif [ -f "Elbouayachi-vpn-source/package.json" ]; then
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
           cd Elbouayachi-vpn-source
         fi
+        pwd
+        ls
         rm -rf node_modules package-lock.json
         npm install --force --no-audit --no-fund --ignore-scripts
+
+    - name: Install Capacitor
+      run: |
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
         npm install --force --no-audit --no-fund --ignore-scripts @capacitor/cli @capacitor/core @capacitor/android
+
+    - name: Build web app
+      run: |
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
         npm run build --if-present
+        ls
+
+    - name: Capacitor sync
+      run: |
+        if [ ! -f "package.json" ] && [ -f "Elbouayachi-vpn-source/package.json" ]; then
+          cd Elbouayachi-vpn-source
+        fi
         npx cap sync android
 
     - name: Setup Android SDK Environment
