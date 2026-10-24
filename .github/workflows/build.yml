@@ -2,8 +2,9 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -21,23 +22,11 @@ jobs:
 
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
-
-    - name: Install Build Tools and Platform
-      run: |
-        sdkmanager "platforms;android-34" "build-tools;34.0.0"
+      with:
+        accept-android-sdk-licenses: true
 
     - name: Grant execute permission for gradlew
-      run: |
-        cd android
-        chmod +x gradlew
+      run: chmod +x gradlew
 
-    - name: Build Debug APK
-      run: |
-        cd android
-        ./gradlew assembleDebug --no-daemon
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Build APK with Gradle
+      run: ./gradlew assembleRelease
